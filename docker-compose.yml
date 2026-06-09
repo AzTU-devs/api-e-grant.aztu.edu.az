@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: egrant
+      POSTGRES_USER: egrant
+      POSTGRES_PASSWORD: egrant
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U egrant -d egrant"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DATABASE_URL: jdbc:postgresql://postgres:5432/egrant
+      DATABASE_USERNAME: egrant
+      DATABASE_PASSWORD: egrant
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-prod-this-is-a-very-long-development-only-secret-key-0123456789}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
+      MAIL_ENABLED: ${MAIL_ENABLED:-false}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      STORAGE_BASE_DIR: /app/var/storage
+    ports:
+      - "8080:8080"
+    volumes:
+      - storage:/app/var/storage
+
+volumes:
+  pgdata:
+  storage:
