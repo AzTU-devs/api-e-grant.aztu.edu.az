@@ -30,6 +30,11 @@ public class UserDirectoryImpl implements UserDirectory {
     }
 
     @Override
+    public Optional<String> findEmail(Long userId) {
+        return userRepository.findById(userId).map(u -> u.getPersonalEmail());
+    }
+
+    @Override
     public boolean isProfileCompleted(Long userId) {
         return userRepository.findById(userId).map(u -> u.isProfileCompleted()).orElse(false);
     }
