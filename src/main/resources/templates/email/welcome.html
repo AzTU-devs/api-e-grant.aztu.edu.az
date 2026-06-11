@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><meta charset="UTF-8"/><title>Welcome</title></head>
+<body style="font-family: Arial, sans-serif; color: #222; line-height: 1.5;">
+<h2 style="color:#0b5394;">Welcome to AZTU E-Grant</h2>
+<p>Hello <span th:text="${name}">Researcher</span>,</p>
+<p>Your registration (FIN <strong th:text="${finKod}">0000000</strong>) has been received.
+   Your account is now <strong>pending approval</strong> by an administrator. You will receive a
+   notification once it is approved.</p>
+<p>Best regards,<br/>AZTU E-Grant Team</p>
+</body>
+</html>
