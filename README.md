@@ -63,17 +63,42 @@ Runs unit tests, Testcontainers integration tests (spins up Postgres so Flyway,
 generated columns, enums and the `v_budget_totals` view run against real Postgres), and
 the Spring Modulith boundary verification. **Requires Docker** for Testcontainers.
 
+The integration tests cover the full critical path — signup → OTP → signin → profile
+completion, then lookups → project → team (limit) → budget (cap) → submit (lock gate) →
+expert assignment → report → admin approval → public views.
+
+On macOS without Docker Desktop you can use [Colima](https://github.com/abiosoft/colima):
+
+```bash
+colima start --cpu 4 --memory 6
+export DOCKER_HOST="unix://${HOME}/.colima/default/docker.sock"
+export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE="/var/run/docker.sock"
+./mvnw verify
+```
+
 ## Environment variables
 
 See [`.env.example`](.env.example). Key vars: `DATABASE_URL`, `DATABASE_USERNAME`,
 `DATABASE_PASSWORD`, `JWT_SECRET`, `CORS_ALLOWED_ORIGINS`, `SMTP_*`, `MAIL_ENABLED`,
 `STORAGE_BASE_DIR`, `SPRING_PROFILES_ACTIVE` (`local` | `prod`). No secrets are committed.
 
+## API
+
+REST surface under `/api/v1`, documented in OpenAPI (Swagger UI at `/swagger-ui.html`).
+Errors are RFC 7807 `application/problem+json`. Auth is stateless JWT (bearer); public
+(`/api/v1/public/**`), auth (`/api/v1/auth/**`) and lookup `GET`s are unauthenticated.
+The full legacy→new endpoint mapping is in [`API_MAP.md`](API_MAP.md).
+
+## PDF fonts
+
+The PDF export embeds `/fonts/NotoSans-Regular.ttf` when present on the classpath
+(`src/main/resources/fonts/`), which is recommended for correct Azerbaijani glyphs
+(ə, ğ, ı, ö, ü, ç, ş). Without it the export still works using default fonts.
+
 ## Build status
 
-Foundation (this iteration): scaffold + `shared` + `iam` + complete Flyway schema +
-Modulith boundary test + Testcontainers harness. Remaining modules are tracked in
-`API_MAP.md` (🚧) and land in follow-up iterations.
-
-> Note: this environment has no local JDK/Docker, so `./mvnw verify` must be run on a
-> machine with JDK 21 + Docker installed.
+Complete. All twelve modules are implemented; `./mvnw verify` is green (unit +
+Testcontainers integration covering the critical flows + Spring Modulith boundary
+verification). The Flyway schema matches [`docs/DB_ARCHITECTURE.md`](docs/DB_ARCHITECTURE.md)
+(16 tables + the `v_budget_totals` view + the `system_lock` gate). Every legacy capability
+is reachable in the new `/api/v1` API — see [`API_MAP.md`](API_MAP.md).

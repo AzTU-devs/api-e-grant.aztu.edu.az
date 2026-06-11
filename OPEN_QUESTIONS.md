@@ -45,6 +45,13 @@ assumption. Revisit with stakeholders.
   change needed.
 - **`Instant` ↔ `timestamptz`.** Audit/timestamp columns are `timestamptz`; entities use
   `Instant` with `hibernate.jdbc.time_zone=UTC`. This is the recommended pairing.
-- **Build verification pending tooling.** This was authored in an environment without a
-  local JDK/Docker, so `./mvnw verify` (which needs JDK 21 + Docker for Testcontainers)
-  must be run on a developer machine. See README "Test".
+- **Build verified.** `./mvnw verify` is green on JDK 21 + Docker (Testcontainers Postgres
+  16): unit + integration (full critical-path flow) + Spring Modulith boundary check. The
+  native-enum and generated-column mappings and the `v_budget_totals` view all validate
+  against real Postgres. See README "Test" for the macOS/Colima setup.
+- **Acyclic modules via inversion.** `project` owns submission and exposes a
+  `ProjectSubmissionGuard` SPI; `admin` (system lock) and `budget` (grand-total cap)
+  implement it. So `admin`/`budget` depend on `project`, never the reverse — no cycle.
+- **PDF font.** The PDF export embeds `/fonts/NotoSans-Regular.ttf` if present
+  (`src/main/resources/fonts/`); the binary isn't committed. Add it for correct
+  Azerbaijani glyphs — the export degrades gracefully (default fonts) without it.
