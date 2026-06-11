@@ -23,4 +23,7 @@ public interface ProjectDirectory {
 
     /** Summaries of all non-deleted projects in the given status (e.g. {@code APPROVED} for public listing). */
     List<ProjectSummary> findByStatus(String status);
+
+    /** The project's monthly activity plan, ordered by month (for {@code document} exports). */
+    List<ActivityView> activitiesForProject(Long projectId);
 }

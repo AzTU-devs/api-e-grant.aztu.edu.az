@@ -1,5 +1,6 @@
 package az.aztu.egrant.project.internal;
 
+import az.aztu.egrant.project.api.ActivityView;
 import az.aztu.egrant.project.api.ProjectDetail;
 import az.aztu.egrant.project.api.ProjectDirectory;
 import az.aztu.egrant.project.api.ProjectSummary;
@@ -16,10 +17,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProjectDirectoryImpl implements ProjectDirectory {
 
     private final ProjectRepository repository;
+    private final ProjectActivityRepository activityRepository;
     private final ProjectMapper mapper;
 
-    public ProjectDirectoryImpl(ProjectRepository repository, ProjectMapper mapper) {
+    public ProjectDirectoryImpl(ProjectRepository repository, ProjectActivityRepository activityRepository,
+                                ProjectMapper mapper) {
         this.repository = repository;
+        this.activityRepository = activityRepository;
         this.mapper = mapper;
     }
 
@@ -58,5 +62,12 @@ public class ProjectDirectoryImpl implements ProjectDirectory {
         }
         return repository.findByStatusAndDeletedAtIsNullOrderBySubmittedAtDesc(parsed).stream()
                 .map(mapper::toSummary).toList();
+    }
+
+    @Override
+    public List<ActivityView> activitiesForProject(Long projectId) {
+        return activityRepository.findByProjectIdOrderByMonthAsc(projectId).stream()
+                .map(a -> new ActivityView(a.getMonth(), a.getActivityName()))
+                .toList();
     }
 }
